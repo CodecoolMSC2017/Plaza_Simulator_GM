@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlazaImpl implements Plaza {
+    private String name;
     private List<Shop> shops;
     private boolean isOpen;
 
-    public PlazaImpl(boolean isOpen) {
+    public PlazaImpl(String name) {
+        this.name = name;
         this.shops = new ArrayList<Shop>();
         this.isOpen = false;
     }
@@ -50,6 +52,14 @@ public class PlazaImpl implements Plaza {
     @Override
     public void close() {
         isOpen = false;
+    }
+
+    @Override
+    public String toString() {
+        return "PlazaImpl{" +
+            "name='" + name + '\'' +
+            ", shops=" + shops +
+            '}';
     }
 }
 
