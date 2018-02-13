@@ -20,11 +20,11 @@ public class FoodProduct extends Product {
 
     public boolean isStillConsumable() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-        Date date = new Date();
-        if (date.after(bestBefore)) {
-            return true;
+        Date actualDate = new Date();
+        if (actualDate.after(bestBefore)) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override
