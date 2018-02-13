@@ -1,6 +1,7 @@
 package com.codecool.plaza.api;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class ShopImpl implements Shop {
     private String name;
@@ -42,7 +43,13 @@ public class ShopImpl implements Shop {
 
     @Override
     public Product findByName(String name) throws ShopIsClosedException {
-
+        List<ShopEntry> shopEntries = (List<ShopEntry>) products.values();
+        for (int i = 0; i < shopEntries.size(); i++) {
+            if (shopEntries.get(i).getProduct().getName().equals(name)) {
+                return shopEntries.get(i).getProduct();
+            }
+        }
+    return null;
     }
 
     @Override
