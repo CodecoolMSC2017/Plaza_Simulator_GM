@@ -118,13 +118,13 @@ public class ShopImpl implements Shop {
         if (this.isOpen() == false) {
             throw new ShopIsClosedException("Shop is closed, sorry!");
         }
-        List<Product> boughtProducts = new ArrayList<>();
         if (!hasProduct(barcode)) {
             throw new NoSuchProductException("There's no such product");
         }
-        if (products.get(barcode).getQuantity() == 0) {
+        if (products.get(barcode).getQuantity() == 0 || products.get(barcode).getQuantity() < quantity) {
             throw new OutOfStockException("Product is out of stock sorry!");
         }
+        List<Product> boughtProducts = new ArrayList<>();
         products.get(barcode).decreaseQuantity(quantity);
         for (int i = 0; i < quantity; i++) {
             boughtProducts.add(products.get(barcode).getProduct());
