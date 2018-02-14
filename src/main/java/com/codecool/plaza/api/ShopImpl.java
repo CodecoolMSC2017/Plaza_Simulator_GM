@@ -15,6 +15,10 @@ public class ShopImpl implements Shop {
         products = new HashMap<Long, ShopImpl.ShopEntry>();
     }
 
+    public HashMap<Long, ShopEntry> getProducts() {
+        return products;
+    }
+
     @Override
     public String getName() {
         return name;

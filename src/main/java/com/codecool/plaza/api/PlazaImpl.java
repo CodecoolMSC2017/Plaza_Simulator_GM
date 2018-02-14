@@ -14,6 +14,10 @@ public class PlazaImpl implements Plaza {
         this.isOpen = false;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public List<Shop> getShops() throws PlazaIsClosedException {
         if(this.isOpen() == true) {
