@@ -1,7 +1,6 @@
 package com.codecool.plaza.api;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ShopImpl implements Shop {
     private String name;
@@ -54,26 +53,61 @@ public class ShopImpl implements Shop {
 
     @Override
     public boolean hasProduct(long barcode) throws ShopIsClosedException {
+        for (int i = 0; i < products.keySet().size(); i++) {
+            if (products.keySet().contains(barcode)) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public void addNewProduct(Product product, int quantity, float price) throws ProductAlreadyExistsException, ShopIsClosedException {
-
+        Random rand = new Random();
+        while (true) {
+            int barcode = rand.nextInt(99999) + 10000;
+            if (!hasProduct(barcode)) {
+                ShopEntry newShopEntry = new ShopEntry(product, quantity, price);
+                products.put((long) barcode, newShopEntry);
+                break;
+            }
+        }
     }
 
     @Override
     public void addProduct(long barcode, int quantity) throws NoSuchProductException, ShopIsClosedException {
-
+        if (hasProduct(barcode)) {
+            for (int i = 0; i < products.keySet().size(); i++) {
+                if (products.get(barcode).getProduct().getBarcode() == barcode) {
+                    products.get(barcode).increaseQuantity(quantity);
+                }
+            }
+        }
     }
 
     @Override
     public Product buyProduct(long barcode) throws NoSuchProductException, OutOfStockException, ShopIsClosedException {
+        if (hasProduct(barcode)) {
+            if(products.get(barcode).getQuantity() > 0) {
+                products.get(barcode).decreaseQuantity(1);
+                return products.get(barcode).getProduct();
+            }
+        }
         return null;
     }
 
     @Override
     public List<Product> buyProducts(long barcode, int quantity) throws NoSuchProductException, OutOfStockException, ShopIsClosedException {
+        List<Product> boughtProducts = new ArrayList<>();
+        if (hasProduct(barcode)) {
+            if(products.get(barcode).getQuantity() >= 0) {
+                products.get(barcode).decreaseQuantity(quantity);
+                for (int i = 0; i < quantity ; i++) {
+                    boughtProducts.add(products.get(barcode).getProduct());
+                }
+                return boughtProducts;
+            }
+        }
         return null;
     }
 
