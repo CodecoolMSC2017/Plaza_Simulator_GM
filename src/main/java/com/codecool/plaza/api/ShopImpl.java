@@ -78,12 +78,11 @@ public class ShopImpl implements Shop {
         }
         Random rand = new Random();
         while (true) {
-            int barcode = rand.nextInt(99999) + 10000;
-            if (hasProduct(barcode)) {
+            if (hasProduct(product.getBarcode())) {
                 throw new ProductAlreadyExistsException("This product already exists!");
             }
             ShopEntry newShopEntry = new ShopEntry(product, quantity, price);
-            products.put((long) barcode, newShopEntry);
+            products.put(product.getBarcode(), newShopEntry);
             break;
         }
     }
