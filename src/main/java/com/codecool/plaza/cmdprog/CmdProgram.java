@@ -15,18 +15,19 @@ public class CmdProgram {
     private String[] args;
     PlazaImpl plaza;
     ShopImpl shop;
-    Scanner sc = new Scanner(System.in);
+
 
     public CmdProgram(String[] args) {
         this.args = args;
     }
 
-    public void run() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException {
+    public void run() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException, NoSuchProductException {
         handleStart();
         handleShopInteractListing();
     }
 
     public Plaza handleCreatePlaza() {
+        Scanner sc = new Scanner(System.in);
         System.out.println("First of all create your plaza with a given name!");
         String name = sc.nextLine();
         plaza = new PlazaImpl(name);
@@ -34,6 +35,7 @@ public class CmdProgram {
     }
 
     public void handleStart() {
+        Scanner sc = new Scanner(System.in);
         System.out.println("There are no plaza created yet! \nType 'yes' to continue or 'no' to exit");
         String answer = sc.nextLine();
         if (answer.toLowerCase().equals("no")) {
@@ -44,7 +46,8 @@ public class CmdProgram {
         }
     }
 
-    public void handleShopInteractListing() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException {
+    public void handleShopInteractListing() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException, NoSuchProductException {
+        Scanner sc = new Scanner(System.in);
         System.out.println("1) to list all shops.\n" +
             "2) to add a new shop.\n" +
             "3) to remove an existing shop.\n" +
@@ -101,8 +104,8 @@ public class CmdProgram {
     }
 
     public Shop handleShopAdding() {
+        Scanner sc = new Scanner(System.in);
         System.out.println("Type the name of the new shop");
-        sc.nextLine();
         String name = sc.nextLine();
         System.out.println("Who is the owner of this shop?");
         String owner = sc.nextLine();
@@ -112,8 +115,8 @@ public class CmdProgram {
     }
 
     public void handleShopRemoving() {
+        Scanner sc = new Scanner(System.in);
         System.out.println("Type in the shop's name to remove!");
-        sc.nextLine();
         String shopName = sc.nextLine();
         try {
             plaza.removeShop(plaza.findShopByName(shopName));
@@ -126,6 +129,7 @@ public class CmdProgram {
     }
 
     public void handleFindProductByName() throws ShopIsClosedException {
+        Scanner sc = new Scanner(System.in);
         System.out.println("Type in the product's you're looking for!");
         String name = sc.nextLine();
         Product product = shop.findByName(name);
@@ -133,10 +137,10 @@ public class CmdProgram {
     }
 
     public Product getNewProduct() throws ParseException {
+        Scanner sc = new Scanner(System.in);
         System.out.println("What of the type of your product? (Food / Clothing)");
-        sc.nextLine();
         String productType = sc.nextLine();
-        if (productType.equals("Food")) {
+        if (productType.toLowerCase().equals("food")) {
             System.out.println("What's the name of the product?");
             String name = sc.nextLine();
             System.out.println("What's the barcode of your product?");
@@ -147,18 +151,19 @@ public class CmdProgram {
             System.out.println("How much calories does it contain?");
             int calories = sc.nextInt();
             System.out.println("What's the best before date of your product? (yyyy/MM/dd)");
+            sc.nextLine();
             String dateAsString = sc.nextLine();
             DateFormat format = new SimpleDateFormat("yyyy/MM/dd", Locale.ENGLISH);
             Date date = format.parse(dateAsString);
             FoodProduct food = new FoodProduct(name, barcode, manufacturer, calories, date);
             return food;
-        } else if (productType.equals("clothing")) {
+        } else if (productType.toLowerCase().equals("clothing")) {
             System.out.println("What's the name of the product?");
-            sc.nextLine();
             String name = sc.nextLine();
             System.out.println("What's the barcode of your product?");
             long barcode = sc.nextLong();
             System.out.println("What's the manufacturer of the product?");
+            sc.nextLine();
             String manufacturer = sc.nextLine();
             System.out.println("What's the material of your product?");
             String material = sc.nextLine();
@@ -171,8 +176,8 @@ public class CmdProgram {
     }
 
     public void handleCreation() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException {
+        Scanner sc = new Scanner(System.in);
         Product product = getNewProduct();
-        sc.nextLine();
         System.out.println("Type in the quantity to add!");
         int quantity = sc.nextInt();
         System.out.println("Type in the price of your product!");
@@ -182,9 +187,19 @@ public class CmdProgram {
         System.out.println(product);
     }
 
-    public void handleShopMenu() throws PlazaIsClosedException, NoSuchShopException, ShopIsClosedException, ParseException, ProductAlreadyExistsException {
+    public void handleAddExistingProduct() throws NoSuchProductException, ShopIsClosedException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Type in the products barcode to add!");
+        long barCode = sc.nextLong();
+        System.out.println("Type in the quantity to add!");
+        int quantity = sc.nextInt();
+        shop.addProduct(barCode,quantity);
+        System.out.println("Product has been added to shop!");
+    }
+
+    public void handleShopMenu() throws PlazaIsClosedException, NoSuchShopException, ShopIsClosedException, ParseException, ProductAlreadyExistsException, NoSuchProductException {
+        Scanner sc = new Scanner(System.in);
         System.out.println("Type in the name of the shop to enter!");
-        sc.nextLine();
         String shopName = sc.nextLine();
         try {
             plaza.findShopByName(shopName);
@@ -218,11 +233,14 @@ public class CmdProgram {
                 System.out.println(shop.getOwner());
             } else if (choice == 4) {
                 shop.open();
+                System.out.println("Shop is open now!");
             } else if (choice == 5) {
                 shop.close();
+                System.out.println("Shop has been closed!");
             } else if (choice == 6) {
                 handleCreation();
-
+            } else if (choice == 7) {
+                handleAddExistingProduct();
             }
         }
     }
