@@ -135,7 +135,7 @@ public class ShopImpl implements Shop {
         return boughtProducts;
     }
 
-    class ShopEntry {
+    public class ShopEntry {
         private Product product;
         private int quantity;
         private float price;
