@@ -5,10 +5,7 @@ import com.codecool.plaza.api.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 public class CmdProgram {
     private List<Product> cart;
@@ -19,9 +16,10 @@ public class CmdProgram {
 
     public CmdProgram(String[] args) {
         this.args = args;
+        cart = new ArrayList<>();
     }
 
-    public void run() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException, NoSuchProductException {
+    public void run() throws Exception {
         handleStart();
         handleShopInteractListing();
     }
@@ -46,7 +44,7 @@ public class CmdProgram {
         }
     }
 
-    public void handleShopInteractListing() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException, NoSuchProductException {
+    public void handleShopInteractListing() throws Exception {
         Scanner sc = new Scanner(System.in);
         System.out.println("1) to list all shops.\n" +
             "2) to add a new shop.\n" +
@@ -60,6 +58,8 @@ public class CmdProgram {
         while (true) {
             int choice = sc.nextInt();
             if (choice == 0) {
+                handleListingCart();
+                handleSumOfPrices();
                 break;
             } else if (choice == 1) {
                 try {
@@ -197,7 +197,49 @@ public class CmdProgram {
         System.out.println("Product has been added to shop!");
     }
 
-    public void handleShopMenu() throws PlazaIsClosedException, NoSuchShopException, ShopIsClosedException, ParseException, ProductAlreadyExistsException, NoSuchProductException {
+    public void handleBuyProductByBarcode() throws NoSuchProductException, ShopIsClosedException, OutOfStockException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Type in the product's barcode to buy it!");
+        long barCode = sc.nextLong();
+        Product product = shop.buyProduct(barCode);
+        cart.add(product);
+        System.out.println("Product has been added to your cart!");
+    }
+
+    public void handleBuyProducts() throws NoSuchProductException, ShopIsClosedException, OutOfStockException {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Type in the product's barcode to buy it!");
+        long barCode = sc.nextLong();
+        System.out.println("Type in the product's quantity to buy it/them!");
+        int quantity = sc.nextInt();
+        List<Product> products = shop.buyProducts(barCode,quantity);
+        for (int i = 0; i < products.size(); i++) {
+            cart.add(products.get(i));
+        }
+        System.out.println("Products have been added to your cart!");
+    }
+
+    public void handleSumOfPrices() {
+        float sumOfPrices = 0;
+        //List keys = new ArrayList(shop.getProducts().keySet());
+        for (int i = 0; i < cart.size(); i++) {
+            for (long key : shop.getProducts().keySet()) {
+                if (cart.get(i).getName() == shop.getProducts().get(key).getProduct().getName()) {
+                    sumOfPrices += shop.getProducts().get(key).getPrice();
+                }
+            }
+        }
+        System.out.println("Total sum of prices: " + sumOfPrices);
+    }
+
+    public void handleListingCart() {
+        System.out.println("Your bought products are: ");
+        for (int i = 0; i < cart.size(); i++) {
+            System.out.println(cart.get(i).getName());
+        }
+    }
+
+    public void handleShopMenu() throws Exception {
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the name of the shop to enter!");
         String shopName = sc.nextLine();
@@ -209,7 +251,7 @@ public class CmdProgram {
         } catch (PlazaIsClosedException e) {
             e.printStackTrace();
         }
-        System.out.println("Welcome in the" + plaza.findShopByName(shopName).getName() + "shop!\n Make your choice below");
+        System.out.println("Welcome in the " + plaza.findShopByName(shopName).getName() + " shop!\n Make your choice below");
         System.out.println("1) to list available products.\n" +
             "2) to find products by name.\n" +
             "3) to display the shop's owner.\n" +
@@ -218,7 +260,8 @@ public class CmdProgram {
             "6) to add new product to the shop.\n" +
             "7) to add existing products to the shop.\n" +
             "8) to buy a product by barcode.\n" +
-            "9) to check if the plaza is open or not.\n" +
+            "9) to buy products by barcode.\n" +
+            "10) to list content of cart.\n" +
             "0) back to plaza. ");
 
         while (true) {
@@ -241,6 +284,13 @@ public class CmdProgram {
                 handleCreation();
             } else if (choice == 7) {
                 handleAddExistingProduct();
+            } else if (choice == 8) {
+                handleBuyProductByBarcode();
+            } else if (choice == 9) {
+                handleBuyProducts();
+            } else if (choice == 10) {
+                handleListingCart();
+                handleSumOfPrices();
             }
         }
     }
