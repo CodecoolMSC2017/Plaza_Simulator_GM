@@ -57,8 +57,9 @@ public class PlazaImpl implements Plaza {
             if (shops.get(i).getName().equals(name)) {
                 return shops.get(i);
             }
+            throw new NoSuchShopException("There's no such shop");
         }
-        throw new NoSuchShopException("There's no such shop");
+        return null;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.codecool.plaza.api;
 
 import java.util.*;
 
+
 public class ShopImpl implements Shop {
     private String name;
     private String owner;
@@ -46,13 +47,15 @@ public class ShopImpl implements Shop {
 
     @Override
     public Product findByName(String name) throws ShopIsClosedException {
+        if (products.size() == 0) {
+            System.out.println("There's no product in the shop yet!");
+        }
         if (this.isOpen() == false) {
             throw new ShopIsClosedException("Shop is closed, sorry!");
         }
-        List<ShopEntry> shopEntries = (List<ShopEntry>) products.values();
-        for (int i = 0; i < shopEntries.size(); i++) {
-            if (shopEntries.get(i).getProduct().getName().equals(name)) {
-                return shopEntries.get(i).getProduct();
+        for (long key: products.keySet()){
+            if (products.get(key).getProduct().getName().equals(name)) {
+                return products.get(key).getProduct();
             }
         }
         return null;
