@@ -34,13 +34,18 @@ public class CmdProgram {
 
     public void handleStart() {
         Scanner sc = new Scanner(System.in);
-        System.out.println("There are no plaza created yet! \nType 'yes' to continue or 'no' to exit");
-        String answer = sc.nextLine();
-        if (answer.toLowerCase().equals("no")) {
-            System.exit(0);
-        } else if (answer.toLowerCase().equals("yes")) {
-            handleCreatePlaza();
-            System.out.println("Welcome to the" + " " + plaza.getName() + " " + "plaza! Press");
+        while (true) {
+            System.out.println("There are no plaza created yet! \nType 'yes' to continue or 'no' to exit");
+            String answer = sc.nextLine();
+            if (answer.toLowerCase().equals("no")) {
+                System.exit(0);
+            } else if (answer.toLowerCase().equals("yes")) {
+                handleCreatePlaza();
+                System.out.println("Welcome to the" + " " + plaza.getName() + " " + "plaza! Press");
+                break;
+            } else {
+                System.out.println("Wrong command, try yes or no!");
+            }
         }
     }
 
@@ -55,55 +60,74 @@ public class CmdProgram {
             "7) to check if the plaza is open or not.\n" +
             "0) leave plaza. ");
 
-        while (true) {
-            int choice = sc.nextInt();
-            if (choice == 0) {
-                handleListingCart();
-                handleSumOfPrices();
-                break;
-            } else if (choice == 1) {
-                try {
-                    handleShopListing();
-                } catch (PlazaIsClosedException e) {
-                    System.out.println(e);
+        try {
+            while (true) {
+                int choice = sc.nextInt();
+                if (choice == 0) {
+                    handleListingCart();
+                    handleSumOfPrices();
+                    System.exit(0);
+                } else if (choice == 1) {
+                    try {
+                        handleShopListing();
+                    } catch (PlazaIsClosedException e) {
+                        System.out.println("Plaza is closed!");
+                    }
+                } else if (choice == 2) {
+                    try {
+                        Shop shop = handleShopAdding();
+                        plaza.addShop(shop);
+                    } catch (PlazaIsClosedException ex) {
+                        System.out.println("Plaza is closed!");
+                    }
+                } else if (choice == 3) {
+                    try {
+                        handleShopRemoving();
+                    } catch (NoSuchShopException ex) {
+                        System.out.println("No such product!");
+                    } catch (PlazaIsClosedException ex) {
+                        System.out.println("Plaza is closed!");
+                    }
+                } else if (choice == 4) {
+                    try {
+                        handleShopMenu();
+                    } catch (NullPointerException e) {
+                        System.out.println("No shop was added to plaza yet!");
+                    } catch (PlazaIsClosedException e) {
+                        System.out.println("Plaza is closed!");
+                    } catch (NoSuchShopException e) {
+                        System.out.println("No such shop!");
+                    }
+                } else if (choice == 5) {
+                    plaza.open();
+                    System.out.println("Plaza is open now!");
+                } else if (choice == 6) {
+                    plaza.close();
+                    System.out.println("Plaza has been closed!");
+                } else if (choice == 7) {
+                    System.out.println(plaza.isOpen());
                 }
-            } else if (choice == 2) {
-                try {
-                    plaza.addShop(handleShopAdding());
-                } catch (ShopAlreadyExistsException e) {
-                    System.out.println("This shop already exists!");
-                } catch (PlazaIsClosedException e) {
-                    System.out.println("Plaza is closed!");
-                }
-            } else if (choice == 3) {
-                handleShopRemoving();
-            } else if (choice == 4) {
-                try {
-                    handleShopMenu();
-                } catch (PlazaIsClosedException e) {
-                    System.out.println("Plaza is closed!");
-                } catch (NoSuchShopException e) {
-                    System.out.println("No such shop!");
-                }
-            } else if (choice == 5) {
-                plaza.open();
-                System.out.println("Plaza is open now!");
-            } else if (choice == 6) {
-                plaza.close();
-                System.out.println("Plaza has been closed!");
-            } else if (choice == 7) {
-                System.out.println(plaza.isOpen());
             }
+        } catch (InputMismatchException ex) {
+            System.out.println("Invalid input, try numbers 0-7");
+            handleShopInteractListing();
         }
     }
 
+
     public void handleShopListing() throws PlazaIsClosedException {
+        if (plaza.getShops().size() == 0) {
+            System.out.println("There's no any shop in the plaza!");
+        }
         for (int i = 0; i < plaza.getShops().size(); i++) {
             System.out.println(plaza.getShops().get(i).getName() + "  (Owner: " + plaza.getShops().get(i).getOwner() + ")");
         }
     }
 
-    public Shop handleShopAdding() {
+    public Shop handleShopAdding() throws PlazaIsClosedException {
+        if (plaza.isOpen() == false) {
+            throw new PlazaIsClosedException("Plaza is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type the name of the new shop");
         String name = sc.nextLine();
@@ -114,26 +138,30 @@ public class CmdProgram {
         return shop;
     }
 
-    public void handleShopRemoving() {
+    public void handleShopRemoving() throws PlazaIsClosedException, NoSuchShopException {
+        if (plaza.isOpen() == false) {
+            throw new PlazaIsClosedException("Plaza is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the shop's name to remove!");
         String shopName = sc.nextLine();
-        try {
-            plaza.removeShop(plaza.findShopByName(shopName));
-            System.out.println("Shop has been removed!");
-        } catch (NoSuchShopException e) {
-            e.printStackTrace();
-        } catch (PlazaIsClosedException e) {
-            e.printStackTrace();
-        }
+        plaza.removeShop(plaza.findShopByName(shopName));
+        System.out.println("Shop has been removed!");
     }
 
     public void handleFindProductByName() throws ShopIsClosedException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the product's you're looking for!");
         String name = sc.nextLine();
         Product product = shop.findByName(name);
-        System.out.println("Product found, details: " + product);
+        if (product == null) {
+            System.out.println("There is no such product");
+        } else if (product != null) {
+            System.out.println("Product found, details: " + product);
+        }
     }
 
     public Product getNewProduct() throws ParseException {
@@ -169,35 +197,53 @@ public class CmdProgram {
             String material = sc.nextLine();
             System.out.println("What's the type of your product?");
             String type = sc.nextLine();
-            ClothingProduct product = new ClothingProduct(name,barcode,manufacturer,material,type);
+            ClothingProduct product = new ClothingProduct(name, barcode, manufacturer, material, type);
             return product;
+        } else {
+            System.out.println("Invalid input, try food or clothing!");
+            return null;
         }
-        return null;
     }
 
     public void handleCreation() throws ParseException, ProductAlreadyExistsException, ShopIsClosedException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed");
+        }
         Scanner sc = new Scanner(System.in);
         Product product = getNewProduct();
         System.out.println("Type in the quantity to add!");
         int quantity = sc.nextInt();
         System.out.println("Type in the price of your product!");
         float price = sc.nextFloat();
-        shop.addNewProduct(product,quantity,price);
+        shop.addNewProduct(product, quantity, price);
         System.out.println("Product has been added to shop");
         System.out.println(product);
     }
 
     public void handleAddExistingProduct() throws NoSuchProductException, ShopIsClosedException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the products barcode to add!");
         long barCode = sc.nextLong();
         System.out.println("Type in the quantity to add!");
         int quantity = sc.nextInt();
-        shop.addProduct(barCode,quantity);
+        shop.addProduct(barCode, quantity);
         System.out.println("Product has been added to shop!");
     }
 
+    public void handleGetOwner() throws ShopIsClosedException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed");
+        }
+        System.out.println(shop.getOwner());
+    }
+
     public void handleBuyProductByBarcode() throws NoSuchProductException, ShopIsClosedException, OutOfStockException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the product's barcode to buy it!");
         long barCode = sc.nextLong();
@@ -207,12 +253,15 @@ public class CmdProgram {
     }
 
     public void handleBuyProducts() throws NoSuchProductException, ShopIsClosedException, OutOfStockException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the product's barcode to buy it!");
         long barCode = sc.nextLong();
         System.out.println("Type in the product's quantity to buy it/them!");
         int quantity = sc.nextInt();
-        List<Product> products = shop.buyProducts(barCode,quantity);
+        List<Product> products = shop.buyProducts(barCode, quantity);
         for (int i = 0; i < products.size(); i++) {
             cart.add(products.get(i));
         }
@@ -221,7 +270,6 @@ public class CmdProgram {
 
     public void handleSumOfPrices() {
         float sumOfPrices = 0;
-        //List keys = new ArrayList(shop.getProducts().keySet());
         for (int i = 0; i < cart.size(); i++) {
             for (long key : shop.getProducts().keySet()) {
                 if (cart.get(i).getName() == shop.getProducts().get(key).getProduct().getName()) {
@@ -239,7 +287,20 @@ public class CmdProgram {
         }
     }
 
+    public void handleListProducts() throws ShopIsClosedException {
+        if (shop.isOpen() == false) {
+            throw new ShopIsClosedException("Shop is closed!");
+        }
+        if (shop.getProducts().size() == 0) {
+            System.out.println("There's no added product yet!");
+        }
+        System.out.println(shop.getProducts());
+    }
+
     public void handleShopMenu() throws Exception {
+        if (plaza.isOpen() == false) {
+            throw new PlazaIsClosedException("Plaza is closed!");
+        }
         Scanner sc = new Scanner(System.in);
         System.out.println("Type in the name of the shop to enter!");
         String shopName = sc.nextLine();
@@ -264,34 +325,76 @@ public class CmdProgram {
             "10) to list content of cart.\n" +
             "0) back to plaza. ");
 
-        while (true) {
-            int choice = sc.nextInt();
-            if (choice == 0) {
-                handleShopInteractListing();
-            } else if (choice == 1) {
-                System.out.println(shop.getProducts());
-            } else if (choice == 2) {
-                handleFindProductByName();
-            } else if (choice == 3) {
-                System.out.println(shop.getOwner());
-            } else if (choice == 4) {
-                shop.open();
-                System.out.println("Shop is open now!");
-            } else if (choice == 5) {
-                shop.close();
-                System.out.println("Shop has been closed!");
-            } else if (choice == 6) {
-                handleCreation();
-            } else if (choice == 7) {
-                handleAddExistingProduct();
-            } else if (choice == 8) {
-                handleBuyProductByBarcode();
-            } else if (choice == 9) {
-                handleBuyProducts();
-            } else if (choice == 10) {
-                handleListingCart();
-                handleSumOfPrices();
+        try {
+            while (true) {
+                int choice = sc.nextInt();
+                if (choice == 0) {
+                    handleShopInteractListing();
+                } else if (choice == 1) {
+                    try{
+                        handleListProducts();
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 2) {
+                    try {
+                    handleFindProductByName();
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 3) {
+                    try {
+                        handleGetOwner();
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 4) {
+                    shop.open();
+                    System.out.println("Shop is open now!");
+                } else if (choice == 5) {
+                    shop.close();
+                    System.out.println("Shop has been closed!");
+                } else if (choice == 6) {
+                    try {
+                    handleCreation();
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 7) {
+                    try {
+                        handleAddExistingProduct();
+                    } catch (NoSuchProductException ex) {
+                        System.out.println("There's no such product");
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 8) {
+                    try {
+                    handleBuyProductByBarcode();
+                    } catch (NoSuchProductException ex) {
+                        System.out.println("No such product!");
+                    } catch (OutOfStockException ex) {
+                        System.out.println("Product is out of stock!");
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 9) {
+                    try {
+                    handleBuyProducts();
+                    } catch (NoSuchProductException ex) {
+                        System.out.println("No such product!");
+                    } catch (OutOfStockException ex) {
+                        System.out.println("Product is out of stock!");
+                    } catch (ShopIsClosedException ex) {
+                        System.out.println("Shop is closed!");
+                    }
+                } else if (choice == 10) {
+                    handleListingCart();
+                    handleSumOfPrices();
+                }
             }
+        } catch (InputMismatchException ex) {
+            System.out.println("Not valid input, try number 0-10");
         }
     }
 }
